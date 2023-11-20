@@ -1,0 +1,6 @@
+*
+!.gitignore
+!crypto_work_test.ts
+!crypto_work.ts
+!Simpletext.pdf
+!/output
