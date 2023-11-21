@@ -9,6 +9,10 @@ export type encFileAndencPass = {
     file: Buffer,
     pass: string
 }
+export type encFileAndPass = {
+    file: Buffer,
+    pass: string
+}
 export type inputToEncoding = {
     pub_key: string, 
     login: string
@@ -45,20 +49,8 @@ export const keygen = (password: string):  rsa_keys | 'error' => {
 //  Output: massive with:  Encrypted data, Encrypted passphrase
 export const data_stream_encryption = (stream: Buffer, pub_key_login: inputToEncoding[]): encFileAndencPass[] | 'error'=> {
 
-    const encrypt_data =  (data: Buffer , key: string): Buffer => {
-        const initializationVector = crypto.randomBytes(16);
-        const cipher = crypto.createCipheriv("aes-256-ctr", key, initializationVector);
-        
-        const encrypted = Buffer.concat([initializationVector, cipher.update(data), cipher.final()]);
-    
-        return encrypted;
-    };
-    const keypass_gen_32 = (): string =>{
 
-        const randomBytes = crypto.randomBytes(22);
-        return randomBytes.toString('base64');
 
-    }
             
     const encrypt_keypass = (pub_key: string, privkey:string): string => {
 
@@ -118,26 +110,60 @@ export const data_stream_decryption = (encryptedData: Buffer, enc_passkey: strin
         //Расшифровываем encrypted passphrase for data
         const dec_passkey: string = decrypt_keypass(dec_privkey,enc_passkey);
         
-        const initializationVector = encryptedData.slice(0,16);
-        encryptedData = encryptedData.slice(16);
-        const decipher = crypto.createDecipheriv('aes-256-ctr', dec_passkey, initializationVector);
-        return Buffer.concat([decipher.update(encryptedData), decipher.final()]);  
+        return decrypt_data(encryptedData,dec_passkey)
 
     } catch(error){
         console.log(error)
         return "error";
     }
 }
+export const data_stream_encryption_public = (data: Buffer):encFileAndPass | 'error'=> {
 
+    try{
+        let key256bit = keypass_gen_32()
+        return {file:encrypt_data(data,key256bit), pass: key256bit} as encFileAndPass
+    } catch(error){
+        console.log(error)
+        return 'error'
+    }
+}
+export const data_stream_decryption_public = (data: Buffer, key: string): Buffer | 'error' => {
+    try{
+        return decrypt_data(data,key)
+    } catch(error){
+        console.log(error)
+        return 'error'
+    }
+}
 
 export default{
     keygen,
     data_stream_encryption,
     private_key_decryption,
-    data_stream_decryption
+    data_stream_decryption,
+    data_stream_encryption_public,
+    data_stream_decryption_public
 }
+const keypass_gen_32 = (): string =>{
 
+    const randomBytes = crypto.randomBytes(22);
+    return randomBytes.toString('base64');
 
+}
+const encrypt_data =  (data: Buffer , key: string): Buffer => {
+    const initializationVector = crypto.randomBytes(16);
+    const cipher = crypto.createCipheriv("aes-256-ctr", key, initializationVector);
+    
+    const encrypted = Buffer.concat([initializationVector, cipher.update(data), cipher.final()]);
 
+    return encrypted;
+};
 
+const decrypt_data =  (encryptedData: Buffer , dec_passkey: string): Buffer => {
+    const initializationVector = encryptedData.slice(0,16);
+    encryptedData = encryptedData.slice(16);
+    const decipher = crypto.createDecipheriv('aes-256-ctr', dec_passkey, initializationVector);
+    return Buffer.concat([decipher.update(encryptedData), decipher.final()]);  
+    
+};
 

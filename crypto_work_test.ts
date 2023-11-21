@@ -1,4 +1,4 @@
-import { data_stream_decryption, data_stream_encryption, encFileAndencPass, inputToEncoding, keygen, rsa_keys } from "./crypto_work";
+import { data_stream_decryption, data_stream_decryption_public, data_stream_encryption, data_stream_encryption_public, encFileAndencPass, inputToEncoding, keygen, rsa_keys } from "./crypto_work";
 import * as fs from 'fs';
 
 
@@ -119,4 +119,19 @@ const test_full_function= ()=> {
     
 }
 
-test_full_function()
+const test_public_crypt = () => {
+    const filebuf: Buffer = fs.readFileSync("./pngegg.png")
+    let a = data_stream_encryption_public(filebuf)
+    if(a != 'error'){
+        let r =data_stream_decryption_public(a.file,a.pass)
+        fs.writeFileSync("./output/testenc",a.file)
+        if (r != 'error'){
+            fs.writeFileSync("./output/test",r,)
+        }
+
+    }
+
+}
+
+//test_full_function()
+test_public_crypt()
