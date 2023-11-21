@@ -181,7 +181,7 @@ export const data_stream_decryption_public = (data: Buffer, key: string): Buffer
     }
 }
 
-//7
+// 7.
 export const hashmake = (login: string, password: string): hashData | 'error' => {
     try {
 
@@ -205,7 +205,7 @@ export const hashmake = (login: string, password: string): hashData | 'error' =>
 }
 
 // 8. 
-export const hashRemake = (key:string,login: string, password: string): remakedHash | 'error' => {
+export const hashRemake = (key: string, login: string, password: string): remakedHash | 'error' => {
     try {
 
         let hash: string = crypto.scryptSync(
@@ -217,7 +217,7 @@ export const hashRemake = (key:string,login: string, password: string): remakedH
         return {
             first_part: hash.substring(0, hash_len / 2),
             second_part: hash.substring(hash_len / 2, hash_len),
-            
+
         } as remakedHash
 
     } catch (error) {
@@ -227,26 +227,15 @@ export const hashRemake = (key:string,login: string, password: string): remakedH
 }
 
 
-let b = hashmake("user", "qwerty")
-
-console.log("Maked hash:\n")
-console.log(b)
-
-if (b!= 'error'){
-    let ca =hashRemake(b.key,"user","qwerty")
-    console.log("Remaked hash:\n")
-    console.log(ca)
-}
-
-
-
 export default {
     keygen,
     data_stream_encryption,
     private_key_decryption,
     data_stream_decryption,
     data_stream_encryption_public,
-    data_stream_decryption_public
+    data_stream_decryption_public,
+    hashmake,
+    hashRemake
 }
 
 
