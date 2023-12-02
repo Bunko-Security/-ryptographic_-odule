@@ -49,22 +49,24 @@ const test_data_stream_encryption = () => {
 
     const filebuf: Buffer = fs.readFileSync("./Simpletext.pdf")
     ////
-    let encrypted_info: "error" | encFileAndencPass[] = data_stream_encryption(filebuf, inputKeyAndPss)
+    let encrypted_info: "error" | encFileAndencPass = data_stream_encryption(filebuf, inputKeyAndPss)
     if (encrypted_info == 'error') {
         console.log("keygen error")
         return;
     }
     ////
-    encrypted_info.forEach(element => {
+    console.log("\nEncrypted file: \n" + encrypted_info.file.toString().substring(0, 100))
+    encrypted_info.loginAndencPass.forEach(element => {
         console.log("Info after encripting for " + element.login)
         console.log("\nEncrypted passphrase: \n" + element.pass)
-        console.log("\nEncrypted file: \n" + element.file.toString().substring(0, 100))
+        
 
     })
 }
 
 
-const test_full_function = () => {
+
+const test_full_file_crypto_function = () => {
     // gen key for this test
     let user_password1 = "qwerty"
     let user_password2 = "dambelbas"
@@ -96,23 +98,23 @@ const test_full_function = () => {
     console.log("\nFile:\n" + filebuf.toString().substring(0, 100) + "\n")
 
     ////
-    let encrypted_info: "error" | encFileAndencPass[] = data_stream_encryption(filebuf, inputKeyAndPss)
+    let encrypted_info: "error" | encFileAndencPass = data_stream_encryption(filebuf, inputKeyAndPss)
     if (encrypted_info == 'error') {
         console.log("keygen error")
         return;
     }
     ///
-
-    encrypted_info.forEach(element => {
+    console.log("\nEncrypted file: \n" + encrypted_info.file.toString().substring(0, 100))
+    encrypted_info.loginAndencPass.forEach(element => {
         console.log("Info after encripting for " + element.login)
         console.log("\nEncrypted passphrase: \n" + element.pass)
-        console.log("\nEncrypted file: \n" + element.file.toString().substring(0, 100))
+       
 
     })
 
     ////
-    let decr_data: Buffer | 'error' = data_stream_decryption(encrypted_info[0].file, encrypted_info[0].pass, new_user1_rs_keys.priv_key, user_password1);
-    let decr_data2: Buffer | 'error' = data_stream_decryption(encrypted_info[1].file, encrypted_info[1].pass, new_user2_rs_keys.priv_key, user_password2);
+    let decr_data: Buffer | 'error' = data_stream_decryption(encrypted_info.file, encrypted_info.loginAndencPass[0].pass, new_user1_rs_keys.priv_key, user_password1);
+    let decr_data2: Buffer | 'error' = data_stream_decryption(encrypted_info.file, encrypted_info.loginAndencPass[1].pass, new_user2_rs_keys.priv_key, user_password2);
     ////
     console.log("Decoded with user1 keys:\n" + decr_data.toString().substring(0, 100))
     console.log("\nDecoded with user2 keys:\n" + decr_data2.toString().substring(0, 100))
@@ -146,3 +148,5 @@ const test_hash_make_remake = () => {
     }
 
 }
+
+test_full_file_crypto_function()

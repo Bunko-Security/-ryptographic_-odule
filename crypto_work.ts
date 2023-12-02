@@ -5,8 +5,12 @@ export type rsa_keys = {
     priv_key: string
 }
 export type encFileAndencPass = {
-    login: string,
+    
     file: Buffer,
+    loginAndencPass: loginAndencPass[]
+}
+export type loginAndencPass = {
+    login: string,
     pass: string
 }
 export type encFileAndPass = {
@@ -89,8 +93,8 @@ export const keygen = (password: string): rsa_keys | 'error' => {
 }
 
 //2. Input: Data, Public rsa keys
-//  Output: massive with:  Encrypted data, Encrypted passphrase
-export const data_stream_encryption = (stream: Buffer, pub_key_login: inputToEncoding[]): encFileAndencPass[] | 'error' => {
+//  Output:  Encrypted data and massive with:  Encrypted passphrase and login
+export const data_stream_encryption = (stream: Buffer, pub_key_login: inputToEncoding[]): encFileAndencPass | 'error' => {
 
 
 
@@ -104,23 +108,23 @@ export const data_stream_encryption = (stream: Buffer, pub_key_login: inputToEnc
     }
 
     try {
-        let storage: encFileAndencPass[] = []
 
+        let pass_storage: loginAndencPass[] = []
+        const key = keypass_gen_32()
+        let enc_data = encrypt_data(stream, key)
         pub_key_login.forEach((pubkl) => {
 
-            const key = keypass_gen_32()
-            let enc_data = encrypt_data(stream, key)
+           
             const enckey = encrypt_keypass(pubkl.pub_key, key)
 
-            storage.push({
-                file: enc_data,
+            pass_storage.push({
                 pass: enckey,
                 login: pubkl.login
             })
 
         })
 
-        return storage;
+        return {file:enc_data, loginAndencPass: pass_storage} as encFileAndencPass ;
 
     } catch (error) {
         console.log(error)
