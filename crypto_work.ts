@@ -1,4 +1,6 @@
+// Crypto lib
 import crypto, { KeyObject } from 'crypto';
+
 
 export type rsa_keys = {
     pub_key: string,
@@ -31,16 +33,7 @@ export type remakedHash = {
     first_part: string,
     second_part: string
 }
-const scrypt_hash = (key: string, salt: string): Promise<string | 'error'> => {
 
-    return new Promise<string>((resolve, reject) => {
-        crypto.scrypt(key, salt, 128, (err, derivedKey) => {
-            if (err) reject(err);
-            resolve(derivedKey.toString('hex'));
-        });
-    }).then((value) => { return value; })
-
-}
 
 const keypass_gen_32 = (): string => {
 
@@ -48,8 +41,10 @@ const keypass_gen_32 = (): string => {
     return randomBytes.toString('base64');
 
 }
+
 const encrypt_data = (data: Buffer, key: string): Buffer => {
     const initializationVector = crypto.randomBytes(16);
+  
     const cipher = crypto.createCipheriv("aes-256-ctr", key, initializationVector);
 
     const encrypted = Buffer.concat([initializationVector, cipher.update(data), cipher.final()]);
@@ -97,8 +92,6 @@ export const keygen = (password: string): rsa_keys | 'error' => {
 export const data_stream_encryption = (stream: Buffer, pub_key_login: inputToEncoding[]): encFileAndencPass | 'error' => {
 
 
-
-
     const encrypt_keypass = (pub_key: string, privkey: string): string => {
 
         crypto.publicEncrypt(pub_key, Buffer.from(privkey));
@@ -116,7 +109,6 @@ export const data_stream_encryption = (stream: Buffer, pub_key_login: inputToEnc
 
            
             const enckey = encrypt_keypass(pubkl.pub_key, key)
-
             pass_storage.push({
                 pass: enckey,
                 login: pubkl.login
