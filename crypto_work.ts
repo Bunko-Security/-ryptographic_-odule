@@ -1,6 +1,6 @@
 // Crypto lib
-import crypto, { KeyObject } from 'crypto';
-
+import * as crypto from 'crypto';
+import{ KeyObject } from 'crypto';
 
 export type rsa_keys = {
     pub_key: string,
@@ -104,7 +104,9 @@ export const data_stream_encryption = (stream: Buffer, pub_key_login: inputToEnc
 
         let pass_storage: loginAndencPass[] = []
         const key = keypass_gen_32()
+        console.time("Измерение Encrytion process");
         let enc_data = encrypt_data(stream, key)
+        console.timeEnd("Измерение Encrytion process");
         pub_key_login.forEach((pubkl) => {
 
            

@@ -1,6 +1,7 @@
 // Forge-node lib
-import forge from 'node-forge';
-
+import * as forge from 'node-forge';
+import v8 from 'node:v8'
+const { memoryUsage } = require('node:process');
 export type rsa_keys = {
     pub_key: string,
     priv_key: string
@@ -42,26 +43,70 @@ const keypass_gen_256bit = (): string => {
 
 
 const encrypt_data = (data: Buffer, key: string): Buffer => {
-    
+
+    const peace: number = 20480;
     const initializationVector = forge.random.getBytesSync(16);
+    const iter = Math.floor(data.length / peace) + 1;
+    let encFulePieace: Buffer[] = [];
+
     const cipher = forge.cipher.createCipher('AES-CBC', forge.util.createBuffer(key));
     cipher.start({ iv: initializationVector });
-    cipher.update(forge.util.createBuffer(data.toString('binary')));
+    
+   
+
+    for (let i = 0; i < iter; i++) {
+
+        if (i == 0) {
+            cipher.update(forge.util.createBuffer(data.slice(0, peace).toString('binary')))
+
+        }
+        else if (i == (iter - 1)) {
+            cipher.update(forge.util.createBuffer(data.slice(peace * i).toString('binary')))
+        }
+        else {
+            cipher.update(forge.util.createBuffer(data.slice(peace * i, peace * (i + 1)).toString('binary')));
+        }
+
+        encFulePieace.push(Buffer.from(cipher.output.getBytes(), 'binary'))
+
+    }
+
     cipher.finish();
-    return Buffer.concat([ Buffer.from(initializationVector, 'binary'), Buffer.from(cipher.output.getBytes(), 'binary')]);
+   
+    return Buffer.concat([Buffer.from(initializationVector, 'binary'), Buffer.concat(encFulePieace)]);
 };
 
 const decrypt_data = (encryptedData: Buffer, dec_passkey: string): Buffer => {
-
-    let initializationVector = encryptedData.slice(0, 16);
+    const peace: number = 10240;
+    const initializationVector = encryptedData.slice(0, 16);
+    const iter = Math.floor(encryptedData.length / peace) + 1;
+    let encFulePieace: Buffer[] = []
     encryptedData = encryptedData.slice(16);
 
     const decipher = forge.cipher.createDecipher('AES-CBC', forge.util.createBuffer(dec_passkey));
     decipher.start({ iv: forge.util.createBuffer(initializationVector.toString('binary')) });
-    decipher.update(forge.util.createBuffer(encryptedData.toString('binary')));
+
+    for (let i = 0; i < iter; i++) {
+
+        if (i == 0) {
+            decipher.update(forge.util.createBuffer(encryptedData.slice(0, peace).toString('binary')))
+
+        }
+        else if (i == (iter - 1)) {
+            decipher.update(forge.util.createBuffer(encryptedData.slice(peace * i).toString('binary')))
+        }
+        else {
+            decipher.update(forge.util.createBuffer(encryptedData.slice(peace * i, peace * (i + 1)).toString('binary')));
+        }
+
+        encFulePieace.push(Buffer.from(decipher.output.getBytes(), 'binary'))
+
+    }
+
     decipher.finish();
 
-    return Buffer.from(decipher.output.getBytes(), 'binary');
+    return Buffer.concat(encFulePieace);
+
 };
 
 
@@ -96,7 +141,7 @@ export const data_stream_encryption = (stream: Buffer, pub_key_login: inputToEnc
         let pubk = forge.pki.publicKeyFromPem(pub_key);
         let encrypted = pubk.encrypt(privkey, 'RSA-OAEP');
 
-        return  Buffer.from(encrypted, 'binary').toString('base64');
+        return Buffer.from(encrypted, 'binary').toString('base64');
 
     }
 
@@ -104,13 +149,23 @@ export const data_stream_encryption = (stream: Buffer, pub_key_login: inputToEnc
 
         let pass_storage: loginAndencPass[] = []
         const key = keypass_gen_256bit()
-        let enc_data = encrypt_data(stream, key)
+        //console.time("Измерение Encrytion process");
+        let enc_data: Buffer = encrypt_data(stream, key)
+        //console.timeEnd("Измерение Encrytion process");
+        console.log("Encrfile size: " + enc_data.length)
+        v8.writeHeapSnapshot()
+
+        pub_key_login.forEach((el) => {
+
+            console.log(el.login)
+
+        })
 
         pub_key_login.forEach((pubkl) => {
 
-            const enckey = encrypt_keypass(pubkl.pub_key, key)
-            
-        
+
+            const enckey = encrypt_keypass(pubkl.pub_key, key);
+
             pass_storage.push({
                 pass: enckey,
                 login: pubkl.login
@@ -139,7 +194,7 @@ export const data_stream_decryption = (encryptedData: Buffer, enc_passkey: strin
 
     const decrypt_keypass = (priv_key: forge.pki.rsa.PrivateKey, enc_key: string): string => {
 
-        let decrkey = priv_key.decrypt(Buffer.from(enc_key,'base64').toString('binary'), 'RSA-OAEP');
+        let decrkey = priv_key.decrypt(Buffer.from(enc_key, 'base64').toString('binary'), 'RSA-OAEP');
         return decrkey
 
     }
@@ -149,7 +204,8 @@ export const data_stream_decryption = (encryptedData: Buffer, enc_passkey: strin
 
         //Расшифровываем encrypted passphrase for data
         const dec_passkey: string = decrypt_keypass(dec_privkey, enc_passkey);
-        
+        //console.time("Измерение Decrytion process");
+       // console.timeEnd("Измерение Decrytion process");
         return decrypt_data(encryptedData, dec_passkey)
 
     } catch (error) {
