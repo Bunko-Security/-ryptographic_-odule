@@ -107,7 +107,7 @@ const test_full_file_crypto_function = () => {
 // ./Simpletext.pdf
 // /home/kali/Downloads/animevost_1-seriya-Net-igryi---net-jizni-720p.mp4
 // /home/kali/Documents/wse/No_Game_No_Life_Zero_[AniLibria_TV]_[BDRip_1080p_LQ_HEVC].mkv
-    const filebuf: Buffer = fs.readFileSync("/home/kali/Downloads/animevost_1-seriya-Net-igryi---net-jizni-720p.mp4")
+    const filebuf: Buffer = fs.readFileSync("./MRkk5uRPsdY.jpg")
     console.log(filebuf.length)
     //console.log("\nFile:\n" + filebuf.toString().substring(0, 100) + "\n")
 
@@ -133,7 +133,7 @@ const test_full_file_crypto_function = () => {
     //let decr_data3: Buffer | 'error' = data_stream_decryption(encrypted_info.file, encrypted_info.loginAndencPass[2].pass, new_user3_rs_keys.priv_key, user_password3);
     //console.log("Decoded with user1 keys:\n" + decr_data.toString().substring(0, 100))
     //if (decr_data!= 'error') {
-    fs.writeFileSync("./bigout/NoGame", decr_data)
+    fs.writeFileSync("./bigout/jpg", decr_data)
     //}
     //console.log("\nDecoded with user2 keys:\n" + decr_data2.toString().substring(0, 100))
 
@@ -170,3 +170,4 @@ const test_hash_make_remake = () => {
 
 test_full_file_crypto_function()
 // test_public_crypt()
+//test_hash_make_remake()

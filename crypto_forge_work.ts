@@ -1,6 +1,6 @@
 // Forge-node lib
 import * as forge from 'node-forge';
-import v8 from 'node:v8'
+//import v8 from 'node:v8'
 const { memoryUsage } = require('node:process');
 export type rsa_keys = {
     pub_key: string,
@@ -49,7 +49,7 @@ const encrypt_data = (data: Buffer, key: string): Buffer => {
     const iter = Math.floor(data.length / peace) + 1;
     let encFulePieace: Buffer[] = [];
 
-    const cipher = forge.cipher.createCipher('AES-CBC', forge.util.createBuffer(key));
+    const cipher = forge.cipher.createCipher('AES-CTR', forge.util.createBuffer(key));
     cipher.start({ iv: initializationVector });
     
    
@@ -83,7 +83,7 @@ const decrypt_data = (encryptedData: Buffer, dec_passkey: string): Buffer => {
     let encFulePieace: Buffer[] = []
     encryptedData = encryptedData.slice(16);
 
-    const decipher = forge.cipher.createDecipher('AES-CBC', forge.util.createBuffer(dec_passkey));
+    const decipher = forge.cipher.createDecipher('AES-CTR', forge.util.createBuffer(dec_passkey));
     decipher.start({ iv: forge.util.createBuffer(initializationVector.toString('binary')) });
 
     for (let i = 0; i < iter; i++) {
@@ -153,7 +153,7 @@ export const data_stream_encryption = (stream: Buffer, pub_key_login: inputToEnc
         let enc_data: Buffer = encrypt_data(stream, key)
         //console.timeEnd("Измерение Encrytion process");
         console.log("Encrfile size: " + enc_data.length)
-        v8.writeHeapSnapshot()
+        //v8.writeHeapSnapshot()
 
         pub_key_login.forEach((el) => {
 
@@ -245,6 +245,9 @@ export const hashmake = (login: string, password: string): hashData | 'error' =>
         let hash: string = forge.md.sha256.create().update(key).update(password.concat("&" + login)).digest().toHex()
 
         let hash_len = hash.length;
+        console.log(hash.substring(0, hash_len / 2).length)
+        console.log(hash.substring( hash_len / 2, hash_len).length)
+        console.log(key.length)
         return {
             first_part: hash.substring(0, hash_len / 2),
             second_part: hash.substring(hash_len / 2, hash_len),
